@@ -2,26 +2,27 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 import yt_dlp
 import os
-import uuid  # لإنشاء أسماء ملفات فريدة
+import uuid
 
-TOKEN = "7344680185:AAEs0-LuI__6rQkVnKHLMGwEMOBfL2g5uuo"  # ← استبدل هذا بالمفتاح الحقيقي
+TOKEN = "YOUR_TOKEN"  # ← استبدل هذا بالمفتاح الحقيقي
 
-# دالة لاستخراج الجودات المتاحة 
+# دالة لاستخراج الجودات المتاحة
 def get_available_formats(url):
     ydl = yt_dlp.YoutubeDL()
     info = ydl.extract_info(url, download=False)
     formats = info.get('formats', [])
     
-    # تصفية الجودات المتاحة (فيديو + صوت)
+    # تصفية الجودات المتاحة (فيديو مع صوت)
     available_formats = []
     for f in formats:
         if f.get('vcodec') != 'none' and f.get('acodec') != 'none':  # فيديو مع صوت
             format_id = f.get('format_id')
             resolution = f.get('resolution', 'unknown')
+            format_note = f.get('format_note', 'unknown')  # استخدام format_note كبديل
             ext = f.get('ext', 'unknown')
             available_formats.append({
                 'format_id': format_id,
-                'resolution': resolution,
+                'resolution': resolution if resolution != 'unknown' else format_note,
                 'ext': ext,
             })
     
@@ -45,7 +46,7 @@ async def handle_url(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # إنشاء قائمة أزرار للجودات
         keyboard = []
         for f in formats:
-            button_text = f"{f['resolution']} ({f['ext']})"
+            button_text = f"{f['resolution']} ({f['ext']})"  # عرض الجودة وامتداد الملف
             keyboard.append([InlineKeyboardButton(button_text, callback_data=f['format_id'])])
         
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -60,7 +61,7 @@ async def handle_url(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"حدث خطأ: {e}")
 
 # دالة لمعالجة اختيار الجودة
-async def handle_quality_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def download_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     
@@ -80,6 +81,8 @@ async def handle_quality_choice(update: Update, context: ContextTypes.DEFAULT_TY
         ydl_opts = {
             'format': format_id,
             'outtmpl': filename,  # استخدام اسم الملف الفريد
+            'quiet': True,  # تقليل الإخراج في السجلات
+            'no_warnings': True,  # تجاهل التحذيرات
         }
 
         # التحميل
@@ -101,8 +104,10 @@ async def handle_quality_choice(update: Update, context: ContextTypes.DEFAULT_TY
         # حذف الفيديو بعد الإرسال
         os.remove(final_filename)
     
-    except Exception as e:
+    except yt_dlp.utils.DownloadError as e:
         await query.edit_message_text(f"حدث خطأ: {e}")
+    except Exception as e:
+        await query.edit_message_text(f"حدث خطأ غير متوقع: {e}")
 
 # دالة رئيسية لتشغيل البوت
 def main():
@@ -111,7 +116,7 @@ def main():
     # إضافة handlers
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_url))
-    application.add_handler(CallbackQueryHandler(handle_quality_choice))
+    application.add_handler(CallbackQueryHandler(download_video))
 
     # بدء البوت
     application.run_polling()
