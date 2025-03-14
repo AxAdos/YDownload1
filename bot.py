@@ -6,7 +6,7 @@ import uuid  # لإنشاء أسماء ملفات فريدة
 
 TOKEN = "7344680185:AAEs0-LuI__6rQkVnKHLMGwEMOBfL2g5uuo"  # ← استبدل هذا بالمفتاح الحقيقي
 
-# دالة لاستخراج الجودات المتاحة
+# دالة لاستخراج الجودات المتاحة 
 def get_available_formats(url):
     ydl = yt_dlp.YoutubeDL()
     info = ydl.extract_info(url, download=False)
