@@ -4,7 +4,7 @@ import yt_dlp
 import os
 import uuid
 
-TOKEN = "YOUR_TOKEN"  # ← استبدل هذا بالمفتاح الحقيقي
+TOKEN = "7344680185:AAEs0-LuI__6rQkVnKHLMGwEMOBfL2g5uuo"  # ← استبدل هذا بالمفتاح الحقيقي
 
 # دالة لاستخراج الجودات المتاحة
 def get_available_formats(url):
