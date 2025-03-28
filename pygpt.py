@@ -14,7 +14,7 @@ from telegram.ext import (
 import yt_dlp
 
 # إعداد المتغيرات الأساسية
-TOKEN = "7336372322:AAEtIUcY6nNEEGZzIMjJdfYMTAMsLpTSpzk"  # ← استبدل هذا بالمفتاح الحقيقي
+TOKEN = "7344680185:AAEs0-LuI__6rQkVnKHLMGwEMOBfL2g5uuo"  # ← استبدل هذا بالمفتاح الحقيقي
 PORT = int(os.environ.get("PORT", 10000))  # استخدام المنفذ من البيئة أو 10000 كافتراضي
 
 # إنشاء تطبيق Flask لفتح منفذ HTTP (مطلوب من Render)
